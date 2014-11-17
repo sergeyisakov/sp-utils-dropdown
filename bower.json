@@ -1,0 +1,25 @@
+{
+  "name": "sp-utils-dropdown",
+  "version": "0.0.0",
+  "authors": [
+    "Sergey Isakov <sergey.isakov@saltpepper.ru>"
+  ],
+  "description": "DropDown for sp-utils",
+  "main": "build/DropDown",
+  "keywords": [
+    "sp-utils",
+    "DropDown"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/i-suhar/sp-utils-dropdown.git",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": ">=1.11.1"
+  }
+}

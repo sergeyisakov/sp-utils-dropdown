@@ -1,0 +1,70 @@
+.dropdown_list{
+  $background-color: #fff;
+  $hover-color: #F5F5F5;
+  $border: 1px solid #ccc;
+  $border-radius: 0;
+  $padding-left: 14px;
+  $padding-right: 17px;
+  $vertical-padding: 3px;
+
+  font: 14px Arial;
+  color: #000;
+  height: 100%;
+  position: relative;
+
+  .dropdown-list-button {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    outline: none;
+    border-radius: $border-radius;
+    border: $border;
+    background: $background-color;
+    padding-left: $padding-left;
+    padding-right: $padding-right;
+    background: url(../images/about/vacancy/arrow-bottom.png) no-repeat 96% center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dropdown-list-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    display: none;
+    box-sizing: border-box;
+    padding: 10px 0 5px 0;
+    margin: 2px 0 0;
+    z-index: 10;
+    list-style: none;
+    border: $border;
+    max-height: 300px;
+    border-radius: 0;
+    background: $background-color;
+    overflow: auto;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  }
+
+  &.open > .dropdown-list-menu {
+    display: block;
+  }
+
+  .dropdown_item {
+    padding-left: $padding-left;
+    padding-right: $padding-right;
+    padding-top: $vertical-padding;
+    padding-bottom: $vertical-padding;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover,
+    &.active {
+      background-color: $hover-color;
+    }
+  }
+}
