@@ -75,3 +75,6 @@ define (require, exports, module)->
       @$input.val model.get "value"
       @$input.trigger "change"
       @setButtonText model.get "text"
+
+  DropDownList.version = "0.0.1"
+  DropDownList

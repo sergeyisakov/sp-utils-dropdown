@@ -29,7 +29,7 @@ define(function(require, exports, module) {
       });
     }
   });
-  return DropDownList = View.extend({
+  DropDownList = View.extend({
     className: "dropdown_list",
     itemView: DropDownItem,
     templateFunc: function() {
@@ -79,4 +79,6 @@ define(function(require, exports, module) {
       return this.setButtonText(model.get("text"));
     }
   });
+  DropDownList.version = "0.0.1";
+  return DropDownList;
 });
