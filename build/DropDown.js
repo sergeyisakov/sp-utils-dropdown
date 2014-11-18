@@ -79,6 +79,6 @@ define(function(require, exports, module) {
       return this.setButtonText(model.get("text"));
     }
   });
-  DropDownList.version = "0.0.1";
+  DropDownList.version = "0.0.2";
   return DropDownList;
 });
