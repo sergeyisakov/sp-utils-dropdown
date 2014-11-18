@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     coffee:{
       dist:{
         options:{
-          bare:true
+          bare:false
         },
         files:[{
           expand: true,

@@ -1,11 +1,8 @@
-define (require, exports, module)->
-  Backbone = require "backbone"
-  MixinBackbone = require "backbone-mixin"
-
-  View = MixinBackbone Backbone.Epoxy.View
+Holder =(Backbone, MixinBackbone)->
+  View = MixinBackbone Backbone.View
 
 #------------------- model ---------------------------#
-  DropDownModel = Backbone.Epoxy.Model.extend
+  DropDownModel = Backbone.Model.extend
     defaults:
       text: ""
       value: ""
@@ -67,7 +64,6 @@ define (require, exports, module)->
       "click": "onClick"
 
     initialize: ->
-      window.aaa = @
       @collection = new DropDownCollection
       @listenTo @collection,
         "change:active": @onChangeCollectionActive
@@ -103,5 +99,14 @@ define (require, exports, module)->
       @$input.trigger "change"
       @setButtonText model.get "text"
 
-  DropDownList.version = "0.0.2"
+  DropDownList.version = "0.0.3"
   DropDownList
+
+if (typeof define is 'function') and (typeof define.amd is 'object') and define.amd
+  define [
+    "backbone"
+    'backbone-mixin'
+  ], (Backbone, MixinBackbone)->
+    Holder Backbone, MixinBackbone
+else
+  window.DropDown = Holder(Backbone, MixinBackbone)
