@@ -120,7 +120,7 @@ Holder = (Backbone, MixinBackbone)->
       @$input.trigger "change"
       @setButtonText model.get "text"
 
-  DropDownList.version = "0.0.3"
+  DropDownList.version = "0.0.4"
   DropDownList
 
 if (typeof define is 'function') and (typeof define.amd is 'object') and define.amd

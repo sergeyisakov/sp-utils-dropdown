@@ -2,8 +2,9 @@
   var Holder;
 
   Holder = function(Backbone, MixinBackbone) {
-    var DropDownCollection, DropDownItem, DropDownList, DropDownModel, View;
+    var $, DropDownCollection, DropDownItem, DropDownList, DropDownModel, View;
     View = MixinBackbone(Backbone.View);
+    $ = Backbone.$;
     DropDownModel = Backbone.Model.extend({
       defaults: {
         text: "",
@@ -51,14 +52,15 @@
       }
     });
     DropDownList = View.extend({
+      OPEN_CLASS: "open",
       className: "dropdown_list",
       itemView: DropDownItem,
       templateFunc: function() {
-        return "<button class=dropdown-list-button type='button' data-js-button></button> <ul class=dropdown-list-menu data-js-menu></ul>";
+        return "<button class=dropdown-list-button type='button'></button> <ul class=dropdown-list-menu></ul>";
       },
       ui: {
-        menu: "[data-js-menu]",
-        button: "[data-js-button]"
+        menu: ".dropdown-list-menu",
+        button: ".dropdown-list-button"
       },
       events: {
         "click": "onClick"
@@ -71,7 +73,19 @@
           "remove": this.onRemoveCollection
         });
         this.currentActiveModel = null;
-        return this.views = {};
+        this.isMenuOpen = false;
+        this.views = {};
+        return this.__onBackdropClick = (function(_this) {
+          return function(e) {
+            return _this.onBackdropClick(e);
+          };
+        })(this);
+      },
+      onShow: function() {
+        return $(window).on("click", this.__onBackdropClick);
+      },
+      onClose: function() {
+        return $(window).off("click", this.__onBackdropClick);
       },
       bindToInput: function($input) {
         this.$input = $input;
@@ -83,8 +97,23 @@
         this.collection.remove(this.collection.models);
         return this.collection.add(data);
       },
-      onClick: function() {
-        return this.$el.toggleClass("open");
+      onClick: function(e) {
+        if (this.isMenuOpen) {
+          this.$el.removeClass(this.OPEN_CLASS);
+          return this.isMenuOpen = false;
+        } else {
+          this.$el.addClass(this.OPEN_CLASS);
+          return this.isMenuOpen = true;
+        }
+      },
+      onBackdropClick: function(e) {
+        var isListClick;
+        isListClick = $(e.target).parents("." + this.className)[0] === this.el;
+        if (isListClick || !this.isMenuOpen) {
+          return;
+        }
+        this.$el.removeClass(this.OPEN_CLASS);
+        return this.isMenuOpen = false;
       },
       onAddCollection: function(model) {
         var itemView;
@@ -112,7 +141,7 @@
         return this.setButtonText(model.get("text"));
       }
     });
-    DropDownList.version = "0.0.3";
+    DropDownList.version = "0.0.4";
     return DropDownList;
   };
 
