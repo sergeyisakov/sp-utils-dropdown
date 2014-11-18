@@ -1,7 +1,6 @@
 define (require, exports, module)->
   Backbone = require "backbone"
   MixinBackbone = require "backbone-mixin"
-  require "epoxy"
 
   View = MixinBackbone Backbone.Epoxy.View
 
@@ -21,11 +20,30 @@ define (require, exports, module)->
     className: "dropdown_item"
     tagName: "li"
 
-    bindings:
-      ":el": "text: text, classes: {active: active}"
-
     events:
       "click": "onClick"
+
+    initialize: ->
+      @listenTo @model,
+        "change:text": @onTextChange
+        "change:active": @onActiveChange
+      @updateText()
+      @updateActive()
+
+    updateText: ->
+      @$el.text @model.get "text"
+
+    updateActive: ->
+      if @model.get "active"
+        @$el.addClass "active"
+      else
+        @$el.removeClass "active"
+
+    onTextChange: ->
+      @updateText()
+
+    onActiveChange: ->
+      @updateActive()
 
     onClick: ->
       @model.set active:true
@@ -45,16 +63,18 @@ define (require, exports, module)->
       menu: "[data-js-menu]"
       button: "[data-js-button]"
 
-    bindings:
-      "@ui.menu": "collection: $collection"
-
     events:
       "click": "onClick"
 
     initialize: ->
+      window.aaa = @
       @collection = new DropDownCollection
-      @listenTo @collection, "change:active", @onChangeCollectionActive
+      @listenTo @collection,
+        "change:active": @onChangeCollectionActive
+        "add": @onAddCollection
+        "remove": @onRemoveCollection
       @currentActiveModel = null
+      @views = {}
 
     bindToInput: (@$input)->
 
@@ -68,7 +88,14 @@ define (require, exports, module)->
     onClick: ->
       @$el.toggleClass "open"
 
-    onChangeCollectionActive: (model,value)->
+    onAddCollection: (model)->
+      @views[model.cid] = itemView = new @itemView {model}
+      @ui.menu.append itemView.$el
+
+    onRemoveCollection: (model)->
+      @views[model.cid].remove()
+
+    onChangeCollectionActive: (model, value)->
       return unless value
       @currentActiveModel?.set active:false
       @currentActiveModel = model
