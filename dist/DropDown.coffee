@@ -1,5 +1,6 @@
-Holder =(Backbone, MixinBackbone)->
+Holder = (Backbone, MixinBackbone)->
   View = MixinBackbone Backbone.View
+  $ = Backbone.$
 
 #------------------- model ---------------------------#
   DropDownModel = Backbone.Model.extend
@@ -43,22 +44,23 @@ Holder =(Backbone, MixinBackbone)->
       @updateActive()
 
     onClick: ->
-      @model.set active:true
+      @model.set active: true
 
 #------------------- list ----------------------------#
   DropDownList = View.extend
+    OPEN_CLASS: "open"
     className: "dropdown_list"
     itemView: DropDownItem
 
     templateFunc: ->
       "
-        <button class=dropdown-list-button type='button' data-js-button></button>
-        <ul class=dropdown-list-menu data-js-menu></ul>
+        <button class=dropdown-list-button type='button'></button>
+        <ul class=dropdown-list-menu></ul>
       "
 
     ui:
-      menu: "[data-js-menu]"
-      button: "[data-js-button]"
+      menu: ".dropdown-list-menu"
+      button: ".dropdown-list-button"
 
     events:
       "click": "onClick"
@@ -70,7 +72,15 @@ Holder =(Backbone, MixinBackbone)->
         "add": @onAddCollection
         "remove": @onRemoveCollection
       @currentActiveModel = null
+      @isMenuOpen = false
       @views = {}
+      @__onBackdropClick = (e)=> @onBackdropClick(e)
+
+    onShow:->
+      $(window).on "click", @__onBackdropClick
+
+    onClose:->
+      $(window).off "click", @__onBackdropClick
 
     bindToInput: (@$input)->
 
@@ -81,8 +91,19 @@ Holder =(Backbone, MixinBackbone)->
       @collection.remove @collection.models
       @collection.add data
 
-    onClick: ->
-      @$el.toggleClass "open"
+    onClick: (e)->
+      if @isMenuOpen
+        @$el.removeClass @OPEN_CLASS
+        @isMenuOpen = false
+      else
+        @$el.addClass @OPEN_CLASS
+        @isMenuOpen = true
+
+    onBackdropClick: (e)->
+      isListClick = $(e.target).parents(".#{@className}")[0] is @el
+      return if isListClick or not @isMenuOpen
+      @$el.removeClass @OPEN_CLASS
+      @isMenuOpen = false
 
     onAddCollection: (model)->
       @views[model.cid] = itemView = new @itemView {model}
@@ -109,4 +130,4 @@ if (typeof define is 'function') and (typeof define.amd is 'object') and define.
   ], (Backbone, MixinBackbone)->
     Holder Backbone, MixinBackbone
 else
-  window.DropDown = Holder(Backbone, MixinBackbone)
+  window.DropDown = Holder Backbone, MixinBackbone
