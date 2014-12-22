@@ -66,7 +66,7 @@ Holder = (Backbone, MixinBackbone)->
       "click": "onClick"
 
     initialize: ->
-      @collection = new DropDownCollection
+      @collection ?= new DropDownCollection
       @listenTo @collection,
         "change:active": @onChangeCollectionActive
         "add": @onAddCollection
@@ -81,6 +81,14 @@ Holder = (Backbone, MixinBackbone)->
 
     onClose:->
       $(window).off "click", @__onBackdropClick
+
+    updateCollectionActive: (model)->
+      return unless model.get "active"
+      @currentActiveModel?.set active:false
+      @currentActiveModel = model
+      @$input.val model.get "value"
+      @$input.trigger "change"
+      @setButtonText model.get "text"
 
     bindToInput: (@$input)->
 
@@ -108,19 +116,15 @@ Holder = (Backbone, MixinBackbone)->
     onAddCollection: (model)->
       @views[model.cid] = itemView = new @itemView {model}
       @ui.menu.append itemView.$el
+      @updateCollectionActive model
 
     onRemoveCollection: (model)->
       @views[model.cid].remove()
 
-    onChangeCollectionActive: (model, value)->
-      return unless value
-      @currentActiveModel?.set active:false
-      @currentActiveModel = model
-      @$input.val model.get "value"
-      @$input.trigger "change"
-      @setButtonText model.get "text"
+    onChangeCollectionActive: (model)->
+      @updateCollectionActive model
 
-  DropDownList.version = "0.0.4"
+  DropDownList.version = "0.0.5"
   DropDownList
 
 if (typeof define is 'function') and (typeof define.amd is 'object') and define.amd

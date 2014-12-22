@@ -66,7 +66,9 @@
         "click": "onClick"
       },
       initialize: function() {
-        this.collection = new DropDownCollection;
+        if (this.collection == null) {
+          this.collection = new DropDownCollection;
+        }
         this.listenTo(this.collection, {
           "change:active": this.onChangeCollectionActive,
           "add": this.onAddCollection,
@@ -86,6 +88,21 @@
       },
       onClose: function() {
         return $(window).off("click", this.__onBackdropClick);
+      },
+      updateCollectionActive: function(model) {
+        var _ref;
+        if (!model.get("active")) {
+          return;
+        }
+        if ((_ref = this.currentActiveModel) != null) {
+          _ref.set({
+            active: false
+          });
+        }
+        this.currentActiveModel = model;
+        this.$input.val(model.get("value"));
+        this.$input.trigger("change");
+        return this.setButtonText(model.get("text"));
       },
       bindToInput: function($input) {
         this.$input = $input;
@@ -120,28 +137,17 @@
         this.views[model.cid] = itemView = new this.itemView({
           model: model
         });
-        return this.ui.menu.append(itemView.$el);
+        this.ui.menu.append(itemView.$el);
+        return this.updateCollectionActive(model);
       },
       onRemoveCollection: function(model) {
         return this.views[model.cid].remove();
       },
-      onChangeCollectionActive: function(model, value) {
-        var _ref;
-        if (!value) {
-          return;
-        }
-        if ((_ref = this.currentActiveModel) != null) {
-          _ref.set({
-            active: false
-          });
-        }
-        this.currentActiveModel = model;
-        this.$input.val(model.get("value"));
-        this.$input.trigger("change");
-        return this.setButtonText(model.get("text"));
+      onChangeCollectionActive: function(model) {
+        return this.updateCollectionActive(model);
       }
     });
-    DropDownList.version = "0.0.4";
+    DropDownList.version = "0.0.5";
     return DropDownList;
   };
 
