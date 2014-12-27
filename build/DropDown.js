@@ -13,7 +13,24 @@
       }
     });
     DropDownCollection = Backbone.Collection.extend({
-      model: DropDownModel
+      model: DropDownModel,
+      refresh: function(data) {
+        return this.set(data);
+      },
+      normalize: function(txt) {
+        return txt.toLowerCase().replace(/[^a-zа-я0-9]/g, "");
+      },
+      search: function(val) {
+        var rx;
+        rx = new RegExp("^" + (this.normalize(val)), "g");
+        return this.filter((function(_this) {
+          return function(model) {
+            var text;
+            text = _this.normalize(model.get("text"));
+            return rx.test(text);
+          };
+        })(this));
+      }
     });
     DropDownItem = View.extend({
       className: "dropdown_item",
@@ -65,7 +82,11 @@
       events: {
         "click": "onClick"
       },
-      initialize: function() {
+      initialize: function(options) {
+        this.search = options.search;
+        if (this.dataCollection == null) {
+          this.dataCollection = new DropDownCollection;
+        }
         if (this.collection == null) {
           this.collection = new DropDownCollection;
         }
@@ -77,16 +98,33 @@
         this.currentActiveModel = null;
         this.isMenuOpen = false;
         this.views = {};
-        return this.__onBackdropClick = (function(_this) {
+        this.__onBackdropClick = (function(_this) {
           return function(e) {
             return _this.onBackdropClick(e);
           };
         })(this);
+        return this.__onSearch = (function(_this) {
+          return function(e) {
+            return _this.onSearch(e);
+          };
+        })(this);
+      },
+      render: function() {
+        if (this.search) {
+          this.searchField = $("<input class=dropdown-search placeholder=Найти...>");
+          return this.ui.menu.append(this.searchField);
+        }
       },
       onShow: function() {
+        if (this.search) {
+          this.$el.on("change keyup", '.dropdown-search', this.__onSearch);
+        }
         return $(window).on("click", this.__onBackdropClick);
       },
       onClose: function() {
+        if (this.search) {
+          this.$el.off("change keyup", '.dropdown-search', this.__onSearch);
+        }
         return $(window).off("click", this.__onBackdropClick);
       },
       updateCollectionActive: function(model) {
@@ -111,16 +149,30 @@
         return this.ui.button.text(text);
       },
       setData: function(data) {
-        this.collection.remove(this.collection.models);
-        return this.collection.add(data);
+        this.dataCollection.refresh(data);
+        return this.collection.refresh(data);
+      },
+      onSearch: function() {
+        var searchModels, val;
+        val = this.searchField.val();
+        searchModels = this.dataCollection.search(val);
+        return this.collection.refresh(searchModels);
       },
       onClick: function(e) {
+        var _ref, _ref1, _ref2;
+        if (e.target === ((_ref = this.searchField) != null ? _ref[0] : void 0)) {
+          return;
+        }
         if (this.isMenuOpen) {
           this.$el.removeClass(this.OPEN_CLASS);
           return this.isMenuOpen = false;
         } else {
+          if ((_ref1 = this.searchField) != null) {
+            _ref1.val("").trigger("change");
+          }
           this.$el.addClass(this.OPEN_CLASS);
-          return this.isMenuOpen = true;
+          this.isMenuOpen = true;
+          return (_ref2 = this.searchField) != null ? _ref2.focus() : void 0;
         }
       },
       onBackdropClick: function(e) {
@@ -147,7 +199,7 @@
         return this.updateCollectionActive(model);
       }
     });
-    DropDownList.version = "0.0.5";
+    DropDownList.version = "0.0.6";
     return DropDownList;
   };
 

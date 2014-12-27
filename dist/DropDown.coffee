@@ -13,6 +13,18 @@ Holder = (Backbone, MixinBackbone)->
   DropDownCollection = Backbone.Collection.extend
     model: DropDownModel
 
+    refresh: (data)->
+      @set data
+
+    normalize:(txt)->
+      txt.toLowerCase().replace /[^a-zа-я0-9]/g, ""
+
+    search: (val)->
+      rx = new RegExp "^#{@normalize val}", "g"
+      @filter (model)=>
+        text = @normalize model.get "text"
+        rx.test text
+
 #------------------- item ----------------------------#
   DropDownItem = View.extend
     className: "dropdown_item"
@@ -65,7 +77,9 @@ Holder = (Backbone, MixinBackbone)->
     events:
       "click": "onClick"
 
-    initialize: ->
+    initialize: (options)->
+      @search = options.search
+      @dataCollection ?= new DropDownCollection
       @collection ?= new DropDownCollection
       @listenTo @collection,
         "change:active": @onChangeCollectionActive
@@ -75,11 +89,21 @@ Holder = (Backbone, MixinBackbone)->
       @isMenuOpen = false
       @views = {}
       @__onBackdropClick = (e)=> @onBackdropClick(e)
+      @__onSearch = (e)=> @onSearch(e)
+
+    render: ->
+      if @search
+        @searchField = $("<input class=dropdown-search placeholder=Найти...>")
+        @ui.menu.append @searchField
 
     onShow:->
+      if @search
+        @$el.on "change keyup", '.dropdown-search', @__onSearch
       $(window).on "click", @__onBackdropClick
 
     onClose:->
+      if @search
+        @$el.off "change keyup", '.dropdown-search', @__onSearch
       $(window).off "click", @__onBackdropClick
 
     updateCollectionActive: (model)->
@@ -96,16 +120,24 @@ Holder = (Backbone, MixinBackbone)->
       @ui.button.text text
 
     setData: (data)->
-      @collection.remove @collection.models
-      @collection.add data
+      @dataCollection.refresh data
+      @collection.refresh data
+
+    onSearch: ->
+      val = @searchField.val()
+      searchModels = @dataCollection.search val
+      @collection.refresh searchModels
 
     onClick: (e)->
+      return if e.target is @searchField?[0]
       if @isMenuOpen
         @$el.removeClass @OPEN_CLASS
         @isMenuOpen = false
       else
+        @searchField?.val("").trigger "change"
         @$el.addClass @OPEN_CLASS
         @isMenuOpen = true
+        @searchField?.focus()
 
     onBackdropClick: (e)->
       isListClick = $(e.target).parents(".#{@className}")[0] is @el
@@ -124,7 +156,7 @@ Holder = (Backbone, MixinBackbone)->
     onChangeCollectionActive: (model)->
       @updateCollectionActive model
 
-  DropDownList.version = "0.0.5"
+  DropDownList.version = "0.0.6"
   DropDownList
 
 if (typeof define is 'function') and (typeof define.amd is 'object') and define.amd
